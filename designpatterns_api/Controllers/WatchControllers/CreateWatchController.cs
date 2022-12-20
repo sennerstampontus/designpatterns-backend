@@ -1,9 +1,10 @@
 ﻿using designpatterns_api.Data;
 using designpatterns_api.Entities;
-using Microsoft.AspNetCore.Http;
+using designpatterns_api.Factories;
+using designpatterns_api.Interfaces;
+using designpatterns_api.Models;
+using designpatterns_api.Services;
 using Microsoft.AspNetCore.Mvc;
-using SharedLib.Factories;
-using SharedLib.Models;
 
 namespace designpatterns_api.Controllers.WatchControllers
 {
@@ -11,29 +12,32 @@ namespace designpatterns_api.Controllers.WatchControllers
     // Due to SRP I've created seperate controllers to match the actions. 
     // This controller is focused on POST.
     // As long as it's only POST/CREATE a Watch, this controller is fine.
+    // This is also according to OCP, because when this is done, it's done.
+    // There is no point of modify this working controller, 
+    //if there is something else I would need from shoes, I create a new Controller for that purpose
 
     [Route("api/[controller]")]
     [ApiController]
     public class CreateWatchController : ControllerBase
     {
-        private readonly SqlContext _context;
 
-        public CreateWatchController(SqlContext context)
+        // Injects the IWatchService which is initialized in program.cs
+        // this is to prevent High-level, Low-level imports. DIP.
+
+        private readonly IWatchService _service;
+
+
+        public CreateWatchController(IWatchService service)
         {
-            _context = context;
+            _service = service;
         }
 
-       
+
         [HttpPost]
      
         public async Task<ActionResult<WatchEntity>> Create(WatchModel model)
         {
-            var watch = WatchFactory.Create( model.Title, model.Description, model.Price, model.Category, model.IsWaterproof, model.WatchType, model.Wristband, model.Rating, model.ImageUrl, model.IsOnSale, model.SaleProcent, model.CalculateSalePrice(model.Price, model.SaleProcent));
-         
-            _context.Watches.Add(watch);
-            await _context.SaveChangesAsync();
-            
-            return Created("Created", watch);
+            return Created("", await _service.CreateAsync(model));
         }
     }
 }

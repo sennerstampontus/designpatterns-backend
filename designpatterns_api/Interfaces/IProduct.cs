@@ -1,6 +1,10 @@
 ﻿namespace designpatterns_api.Interfaces
 {
 
+    // Having a IProduct with the basic props of a product, we contain
+    // ourselfs to the principle of ISP. We have no dependency problem.
+    // If there is a product, they have ALL of these props, the is NO unused attribute.
+
     public interface IProduct
     {
 

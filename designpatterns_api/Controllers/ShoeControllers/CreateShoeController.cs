@@ -1,10 +1,10 @@
 ﻿using designpatterns_api.Data;
 using designpatterns_api.Entities;
-using Microsoft.AspNetCore.Http;
+using designpatterns_api.Interfaces;
+using designpatterns_api.Models;
+using designpatterns_api.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SharedLib.Factories;
-using SharedLib.Models;
+
 
 namespace designpatterns_api.Controllers.ShoeControllers
 {
@@ -12,16 +12,24 @@ namespace designpatterns_api.Controllers.ShoeControllers
     // Due to SRP I've created seperate controllers to match the actions. 
     // This controller is focused on POST.
     // As long as it's only POST/CREATE a Shoe, this controller is fine.
+    // This is also according to OCP, because when this is done, it's done.
+    // There is no point of modify this working controller, 
+    //if there is something else I would need from shoes, I create a new Controller for that purpose
 
     [Route("api/[controller]")]
     [ApiController]
     public class CreateShoeController : ControllerBase
     {
-        private readonly SqlContext _context;
 
-        public CreateShoeController(SqlContext context)
+        // Injects the IShoeService which is initialized in program.cs
+        // this is to prevent High-level, Low-level imports. DIP.
+
+
+        private readonly IShoeService _service;
+
+        public CreateShoeController(IShoeService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpPost]
@@ -29,14 +37,7 @@ namespace designpatterns_api.Controllers.ShoeControllers
         {
 
 
-            var _shoe = ShoeFactory.Create( model.Title, model.Description, model.Price, model.Category, model.Heels, model.Rating, model.ImageUrl, model.IsOnSale, model.SaleProcent, model.CalculateSalePrice(model.Price, model.SaleProcent));
-
-            _context.Shoes.Add(_shoe);
-            await _context.SaveChangesAsync();
-
-
-
-            return Created("Created", _shoe);
+            return Created("", await _service.CreateAsync(model));
         }
     }
 }
